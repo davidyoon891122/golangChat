@@ -6,6 +6,8 @@ import (
 	"io"
 	"net"
 	"os"
+
+	"time"
 )
 
 var (
@@ -36,14 +38,15 @@ func main() {
 		}
 
 		conn.Write([]byte(data))
+		in.Reset(os.Stdin)
+		time.Sleep(2 * time.Second)
 	}
 }
 
 func RecvFunc(conn net.Conn) {
-	recvBuf = make([]byte, 0, 4096)
-	tmp := make([]byte, 256)
-
 	for {
+		recvBuf = make([]byte, 0, 4096)
+		tmp := make([]byte, 256)
 		n, err := conn.Read(tmp)
 		if err != nil {
 			if err != io.EOF {

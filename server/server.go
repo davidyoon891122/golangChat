@@ -10,12 +10,13 @@ var (
 	IP               string
 	PORT             string
 	CurrentDirectory string
-	ClientPool       []Client
+	ClientPool       map[string]Client
 )
 
+// map[IP]Client {ID, Conn}
 type Client struct {
-	Address string
-	Conn    net.Conn
+	UserID string
+	Conn   net.Conn
 }
 
 func main() {
@@ -23,12 +24,13 @@ func main() {
 	PORT = ":13302"
 
 	ln, err := net.Listen("tcp", IP+PORT)
+	fmt.Println("chat server is working now...")
 
 	defer ln.Close()
 	if err != nil {
 		panic(err)
 	}
-
+	ClientPool = make(map[string]Client)
 	for {
 		conn, err := ln.Accept()
 
@@ -47,16 +49,16 @@ func Handler(conn net.Conn) {
 	defer conn.Close()
 	client := conn.RemoteAddr().String()
 	clientS := Client{
-		Address: client,
-		Conn:    conn,
+		UserID: "",
+		Conn:   conn,
 	}
-	ClientPool = append(ClientPool, clientS)
+	ClientPool[client] = clientS
 
 	fmt.Printf("ClientPool : %v\n", ClientPool)
 	fmt.Printf("Connected Client : %s \n", client)
-	recvBuf = make([]byte, 0, 4096)
-	tmp := make([]byte, 256)
 	for {
+		recvBuf = make([]byte, 0, 4096)
+		tmp := make([]byte, 256)
 		n, err := conn.Read(tmp)
 		if err != nil {
 			if err != io.EOF {
@@ -69,11 +71,7 @@ func Handler(conn net.Conn) {
 		fmt.Printf("data from client: %s", string(recvBuf))
 
 		conn.Write(recvBuf)
-
 	}
 
-}
-
-func DeleteClinet() {
-
+	defer delete(ClientPool, client)
 }
