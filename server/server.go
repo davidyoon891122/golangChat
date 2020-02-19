@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"io"
 	"net"
+
+	"../tools"
 )
 
 var (
@@ -22,7 +24,6 @@ type Client struct {
 func main() {
 	IP = "10.131.150.171"
 	PORT = ":13302"
-
 	ln, err := net.Listen("tcp", IP+PORT)
 	fmt.Println("chat server is working now...")
 
@@ -47,15 +48,15 @@ func main() {
 func Handler(conn net.Conn) {
 	var recvBuf []byte
 	defer conn.Close()
-	client := conn.RemoteAddr().String()
-	clientS := Client{
+	address := conn.RemoteAddr().String()
+	client := Client{
 		UserID: "",
 		Conn:   conn,
 	}
-	ClientPool[client] = clientS
+	ClientPool[address] = client
 
 	fmt.Printf("ClientPool : %v\n", ClientPool)
-	fmt.Printf("Connected Client : %s \n", client)
+	fmt.Printf("Connected Client address: %s \n", address)
 	for {
 		recvBuf = make([]byte, 0, 4096)
 		tmp := make([]byte, 256)
@@ -67,11 +68,14 @@ func Handler(conn net.Conn) {
 			break // if the error is End of File error, then break
 		}
 		recvBuf = append(recvBuf, tmp[:n]...)
-		fmt.Printf("total size : %d \n", len(recvBuf))
-		fmt.Printf("data from client: %s", string(recvBuf))
 
-		conn.Write(recvBuf)
+		msg := tools.Unpack(recvBuf)
+		fmt.Printf("%v : %s", address, msg)
+		for k, v := range ClientPool { //broad casting
+			fmt.Printf("key : %s, value : %v", k, v.UserID)
+			v.Conn.Write(recvBuf)
+		}
 	}
 
-	defer delete(ClientPool, client)
+	defer delete(ClientPool, address)
 }

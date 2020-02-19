@@ -8,6 +8,8 @@ import (
 	"os"
 
 	"time"
+
+	"../tools"
 )
 
 var (
@@ -37,7 +39,9 @@ func main() {
 			panic(err)
 		}
 
-		conn.Write([]byte(data))
+		packedData := tools.Pack(data)
+		fmt.Println(packedData)
+		conn.Write(packedData)
 		in.Reset(os.Stdin)
 		time.Sleep(2 * time.Second)
 	}
@@ -56,8 +60,10 @@ func RecvFunc(conn net.Conn) {
 		}
 		recvBuf = append(recvBuf, tmp[:n]...)
 
+		msg := tools.Unpack(recvBuf)
+
 		fmt.Printf("total size : %d\n", len(recvBuf))
-		fmt.Printf("data from server : %s", string(recvBuf))
+		fmt.Printf("data from server : %s", msg)
 
 	}
 
