@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"../tools"
+	"./menu"
 )
 
 var (
@@ -31,6 +32,10 @@ func main() {
 
 	go RecvFunc(conn)
 
+	packedLoginData := menu.DisplayMenu()
+
+	conn.Write(packedLoginData)
+
 	for {
 		fmt.Printf("client : ")
 		in := bufio.NewReader(os.Stdin)
@@ -39,7 +44,7 @@ func main() {
 			panic(err)
 		}
 
-		packedData := tools.Pack(data)
+		packedData := tools.Pack(data, 0, 0)
 		fmt.Println(packedData)
 		conn.Write(packedData)
 		in.Reset(os.Stdin)

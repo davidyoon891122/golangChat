@@ -35,3 +35,27 @@ func (h *Header) putProcess(process int) {
 func (h *Header) putService(service int) {
 	h.Service = int16(service)
 }
+
+func readHeader() {
+	header = InitHeader()
+	header.Length = readInt()
+	header.DataLength = readInt()
+	header.Process = readShort()
+	header.Service = readShort()
+}
+
+func (h *Header) GetLength() int {
+	return h.Length
+}
+
+func (h *Header) GetDataLength() int {
+	return h.DataLength
+}
+
+func (h *Header) GetProcess() int16 {
+	return h.Process
+}
+
+func (h *Header) GetService() int16 {
+	return h.Service
+}

@@ -2,6 +2,7 @@ package tools
 
 import (
 	"encoding/binary"
+	"fmt"
 )
 
 var index int = 0
@@ -10,48 +11,23 @@ var recvBytes []byte
 func Unpack(recvBytesG []byte) string {
 	recvBytes = recvBytesG
 	readHeader()
-	ret := ReadChat()
-	index = 0
-	return ret
-}
+	fmt.Println(header.DataLength)
+	fmt.Println(header.Service)
 
-func readHeader() {
-	header = InitHeader()
-	header.Length = readInt()
-	header.DataLength = readInt()
-	header.Process = readShort()
-	header.Service = readShort()
+	readBody()
+	return ""
 }
 
 func readBody() {
-	ReadChat()
+	if header.Service == 1 {
+		readLogin()
+		runLogin()
+	} else if header.Service == 2 {
+		ret := readChat()
 
-}
-
-func (h *Header) GetLength() int {
-	return h.Length
-}
-
-func (h *Header) GetDataLength() int {
-	return h.DataLength
-}
-
-func (h *Header) GetProcess() int16 {
-	return h.Process
-}
-
-func (h *Header) GetService() int16 {
-	return h.Service
-}
-
-func ReadChat() string {
-	chat := readString()
-
-	return chat
-}
-
-func GetChat() {
-
+		fmt.Println(ret)
+		index = 0
+	}
 }
 
 func readInt() int {

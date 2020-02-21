@@ -57,6 +57,9 @@ func Handler(conn net.Conn) {
 
 	fmt.Printf("ClientPool : %v\n", ClientPool)
 	fmt.Printf("Connected Client address: %s \n", address)
+
+	// loginFunc(conn)
+
 	for {
 		recvBuf = make([]byte, 0, 4096)
 		tmp := make([]byte, 256)
@@ -79,3 +82,11 @@ func Handler(conn net.Conn) {
 
 	defer delete(ClientPool, address)
 }
+
+// func loginFunc(conn net.Conn) {
+// 	var msg string
+// 	fmt.Println("Login Process")
+// 	msg = "Please send your ID and password"
+// 	packedMsg := tools.Pack(msg, 0, 1)
+// 	conn.Write(packedMsg)
+// }
