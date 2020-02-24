@@ -8,26 +8,41 @@ import (
 var index int = 0
 var recvBytes []byte
 
-func Unpack(recvBytesG []byte) string {
+//[]byte 초기화
+func Unpack(recvBytesG []byte) (string, bool, string) {
 	recvBytes = recvBytesG
+	fmt.Println("recvBytes : ", recvBytes)
 	readHeader()
-	fmt.Println(header.DataLength)
-	fmt.Println(header.Service)
+	//execute specific function by Service
 
-	readBody()
-	return ""
-}
-
-func readBody() {
-	if header.Service == 1 {
-		readLogin()
-		runLogin()
-	} else if header.Service == 2 {
-		ret := readChat()
-
-		fmt.Println(ret)
+	if header.Error == 1 {
 		index = 0
+		return "Error", false, "Error"
 	}
+
+	if header.Service == 1 {
+		// Service 1 is the login function.
+		readLogin()
+		var res bool
+		var code int
+		res, code = runLogin()
+		fmt.Println("check res in unpack: ", res)
+		index = 0
+		return LoginCode[code], res, "Login"
+	} else if header.Service == 2 {
+		// Service 2 is the chat function
+		msg := readChat()
+		fmt.Println(msg)
+		index = 0
+		return msg, true, "Chat"
+	} else if header.Service == 0 {
+		msg := readChat()
+		fmt.Println(msg)
+		index = 0
+		return msg, false, "Chat"
+	}
+
+	return "", false, ""
 }
 
 func readInt() int {
@@ -48,4 +63,15 @@ func readString() string {
 	index += strLength
 
 	return string(str)
+}
+
+func readByte() byte {
+	ret := recvBytes[index : index+1]
+
+	return ret[0]
+
+}
+
+func setError() {
+
 }

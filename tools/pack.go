@@ -6,7 +6,7 @@ import (
 	"fmt"
 )
 
-var headerLength int = 12
+var headerLength int = 13
 var header *Header
 var chat *Chat
 var login *Login
@@ -23,11 +23,9 @@ func PackHeader() {
 	packShort(header.Process)
 	packShort(header.Service)
 	headerBytes = append(headerBytes, dataBuffer.Bytes()...)
-	dataBuffer.Reset()
 }
 
-func Pack(data interface{}, process int, service int) []byte {
-	dataBuffer.Reset()
+func Pack(data interface{}, process int, service int, err int) []byte {
 	var totalBytes []byte
 
 	switch data.(type) {
@@ -35,26 +33,27 @@ func Pack(data interface{}, process int, service int) []byte {
 		chat = InitChat()
 		chat.chatPacker(data.(string))
 		chatWrap()
-
 		header = InitHeader()
-		header.headerPacker(headerLength, dataLength, process, service)
+		header.headerPacker(headerLength, dataLength, process, service, err)
 		PackHeader()
 		totalBytes = append(headerBytes, bodyBytes...)
-		fmt.Println("headerbytes", headerBytes)
-		fmt.Println("bodybytes", bodyBytes)
-		fmt.Println("totalbytes", totalBytes)
+		fmt.Println("totalBytes : ", totalBytes)
+		headerBytes = nil
+		bodyBytes = nil
+		dataBuffer.Reset()
 		return totalBytes
 	case *Login:
 		login = InitLogin()
 		login = data.(*Login)
 		loginWrap()
 		header = InitHeader()
-		header.headerPacker(headerLength, dataLength, process, service)
+		header.headerPacker(headerLength, dataLength, process, service, err)
 		PackHeader()
 		totalBytes = append(headerBytes, bodyBytes...)
-		fmt.Println("headerbytes", headerBytes)
-		fmt.Println("bodybytes", bodyBytes)
-		fmt.Println("totalbytes", totalBytes)
+		fmt.Println("totalBytes : ", totalBytes)
+		bodyBytes = nil
+		headerBytes = nil
+		dataBuffer.Reset()
 		return totalBytes
 	}
 	return nil
@@ -64,7 +63,6 @@ func loginWrap() {
 	packString(login.UserID)
 	packString(login.Password)
 	dataLength = dataBuffer.Len() + headerLength
-	fmt.Println("in loginWrap", dataBuffer.Bytes())
 	bodyBytes = append(bodyBytes, dataBuffer.Bytes()...)
 	dataBuffer.Reset()
 }

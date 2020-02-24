@@ -72,11 +72,36 @@ func Handler(conn net.Conn) {
 		}
 		recvBuf = append(recvBuf, tmp[:n]...)
 
-		msg := tools.Unpack(recvBuf)
-		fmt.Printf("%v : %s", address, msg)
-		for k, v := range ClientPool { //broad casting
-			fmt.Printf("key : %s, value : %v", k, v.UserID)
-			v.Conn.Write(recvBuf)
+		msg, res, service := tools.Unpack(recvBuf)
+
+		fmt.Println("Unpacked res:", res)
+		fmt.Println("MSG to client : ", msg)
+		if service == "Login" {
+			if res == true {
+				packedData := tools.Pack(msg, 0, 2, 0)
+				fmt.Println("packedData : ", packedData)
+				conn.Write(packedData)
+			} else if res == false {
+				packedData := tools.Pack("login failed", 0, 0, 1)
+				fmt.Println("packedData : ", packedData)
+				conn.Write(packedData)
+
+			} else {
+				fmt.Println("Login res exception")
+			}
+
+		} else if service == "Error" {
+			packedData := tools.Pack("", 0, 0, 1)
+			conn.Write(packedData)
+
+		} else if service == "Chat" {
+			fmt.Println(res)
+
+			fmt.Printf("%v : %s", address, msg)
+			for k, v := range ClientPool { //broad casting
+				fmt.Printf("key : %s, value : %v", k, v.UserID)
+				v.Conn.Write(recvBuf)
+			}
 		}
 	}
 

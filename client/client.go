@@ -7,8 +7,6 @@ import (
 	"net"
 	"os"
 
-	"time"
-
 	"../tools"
 	"./menu"
 )
@@ -29,14 +27,31 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	for {
+		packedLoginData := menu.DisplayMenu()
+
+		conn.Write(packedLoginData)
+
+		loginBuf := make([]byte, 4096)
+
+		n, err := conn.Read(loginBuf)
+		if err != nil {
+			panic(err)
+		}
+
+		msg, res, service := tools.Unpack(loginBuf[:n])
+		fmt.Println("MSG from server : ", msg)
+		fmt.Println("from server res : ", res)
+		fmt.Println("Server : ", service)
+
+		if res == true {
+			break
+		}
+	}
 
 	go RecvFunc(conn)
-
-	packedLoginData := menu.DisplayMenu()
-
-	conn.Write(packedLoginData)
-
 	for {
+
 		fmt.Printf("client : ")
 		in := bufio.NewReader(os.Stdin)
 		data, err := in.ReadString('\n')
@@ -44,11 +59,11 @@ func main() {
 			panic(err)
 		}
 
-		packedData := tools.Pack(data, 0, 0)
+		packedData := tools.Pack(data, 0, 2, 0)
 		fmt.Println(packedData)
 		conn.Write(packedData)
 		in.Reset(os.Stdin)
-		time.Sleep(2 * time.Second)
+		// time.Sleep(2 * time.Second)
 	}
 }
 
@@ -65,7 +80,14 @@ func RecvFunc(conn net.Conn) {
 		}
 		recvBuf = append(recvBuf, tmp[:n]...)
 
-		msg := tools.Unpack(recvBuf)
+		msg, res, service := tools.Unpack(recvBuf)
+		fmt.Println("from server res : ", res)
+		fmt.Println("Server : ", service)
+		if res == false {
+			packedLoginData := menu.DisplayMenu()
+
+			conn.Write(packedLoginData)
+		}
 
 		fmt.Printf("total size : %d\n", len(recvBuf))
 		fmt.Printf("data from server : %s", msg)

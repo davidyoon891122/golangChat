@@ -1,10 +1,13 @@
 package tools
 
+import "fmt"
+
 type Header struct {
 	Length     int
 	DataLength int
 	Process    int16
 	Service    int16
+	Error      byte
 }
 
 func InitHeader() *Header {
@@ -13,11 +16,12 @@ func InitHeader() *Header {
 	return header
 }
 
-func (h *Header) headerPacker(length int, dataLength int, process int, service int) {
+func (h *Header) headerPacker(length int, dataLength int, process int, service int, err int) {
 	h.putLength(length)
 	h.putDataLength(dataLength)
 	h.putProcess(process)
 	h.putService(service)
+	h.putError(err)
 }
 
 func (h *Header) putLength(length int) {
@@ -36,12 +40,23 @@ func (h *Header) putService(service int) {
 	h.Service = int16(service)
 }
 
+func (h *Header) putError(err int) {
+	h.Error = byte(err)
+}
+
 func readHeader() {
 	header = InitHeader()
 	header.Length = readInt()
 	header.DataLength = readInt()
 	header.Process = readShort()
 	header.Service = readShort()
+	header.Error = readByte()
+	fmt.Println("Length", header.Length)
+	fmt.Println("DataLength", header.DataLength)
+	fmt.Println("Process", header.Process)
+	fmt.Println("Service", header.Service)
+	fmt.Println("Error", header.Error)
+
 }
 
 func (h *Header) GetLength() int {
@@ -58,4 +73,8 @@ func (h *Header) GetProcess() int16 {
 
 func (h *Header) GetService() int16 {
 	return h.Service
+}
+
+func (h *Header) GetError() byte {
+	return h.Error
 }

@@ -22,7 +22,7 @@ func DisplayMenu() []byte {
 		fmt.Scanf("%d", &menuSelect)
 
 		if menuSelect == 1 {
-			return tools.Pack(getUserInfo(), 1, 1)
+			return tools.Pack(getUserInfo(), 1, 1, 0)
 		} else if menuSelect == 2 {
 			os.Exit(0)
 		}
