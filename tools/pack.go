@@ -3,7 +3,6 @@ package tools
 import (
 	"bytes"
 	"encoding/binary"
-	"fmt"
 )
 
 var headerLength int = 13
@@ -37,7 +36,6 @@ func Pack(data interface{}, process int, service int, err int) []byte {
 		header.headerPacker(headerLength, dataLength, process, service, err)
 		PackHeader()
 		totalBytes = append(headerBytes, bodyBytes...)
-		fmt.Println("totalBytes : ", totalBytes)
 		headerBytes = nil
 		bodyBytes = nil
 		dataBuffer.Reset()
@@ -50,7 +48,6 @@ func Pack(data interface{}, process int, service int, err int) []byte {
 		header.headerPacker(headerLength, dataLength, process, service, err)
 		PackHeader()
 		totalBytes = append(headerBytes, bodyBytes...)
-		fmt.Println("totalBytes : ", totalBytes)
 		bodyBytes = nil
 		headerBytes = nil
 		dataBuffer.Reset()
