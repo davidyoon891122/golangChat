@@ -7,11 +7,11 @@ import (
 
 var index int = 0
 var recvBytes []byte
+var UserID string
 
 //[]byte 초기화
 func Unpack(recvBytesG []byte) (string, bool, string) {
 	recvBytes = recvBytesG
-	fmt.Println("recvBytes : ", recvBytes)
 	readHeader()
 	//execute specific function by Service
 
@@ -25,8 +25,8 @@ func Unpack(recvBytesG []byte) (string, bool, string) {
 		readLogin()
 		var res bool
 		var code int
+		UserID = login.UserID
 		res, code = runLogin()
-		fmt.Println("check res in unpack: ", res)
 		index = 0
 		return LoginCode[code], res, "Login"
 	} else if header.Service == 2 {

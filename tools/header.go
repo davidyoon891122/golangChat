@@ -1,7 +1,5 @@
 package tools
 
-import "fmt"
-
 type Header struct {
 	Length     int
 	DataLength int
@@ -51,12 +49,6 @@ func readHeader() {
 	header.Process = readShort()
 	header.Service = readShort()
 	header.Error = readByte()
-	fmt.Println("Length", header.Length)
-	fmt.Println("DataLength", header.DataLength)
-	fmt.Println("Process", header.Process)
-	fmt.Println("Service", header.Service)
-	fmt.Println("Error", header.Error)
-
 }
 
 func (h *Header) GetLength() int {

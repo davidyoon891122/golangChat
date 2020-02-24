@@ -63,6 +63,10 @@ func runLogin() (bool, int) {
 
 }
 
-func checkInfo() {
+func (l *Login) GetUserID() string {
+	return l.UserID
+}
 
+func (l *Login) GetPassword() string {
+	return l.Password
 }

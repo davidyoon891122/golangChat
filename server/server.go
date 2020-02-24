@@ -78,12 +78,17 @@ func Handler(conn net.Conn) {
 		fmt.Println("MSG to client : ", msg)
 		if service == "Login" {
 			if res == true {
+
+				fmt.Println("UserID : ", tools.UserID)
+				client := Client{
+					UserID: tools.UserID,
+					Conn:   conn,
+				}
+				ClientPool[address] = client
 				packedData := tools.Pack(msg, 0, 2, 0)
-				fmt.Println("packedData : ", packedData)
 				conn.Write(packedData)
 			} else if res == false {
 				packedData := tools.Pack("login failed", 0, 0, 1)
-				fmt.Println("packedData : ", packedData)
 				conn.Write(packedData)
 
 			} else {
@@ -97,10 +102,12 @@ func Handler(conn net.Conn) {
 		} else if service == "Chat" {
 			fmt.Println(res)
 
-			fmt.Printf("%v : %s", address, msg)
+			fmt.Printf("%v : %s", ClientPool[address].UserID, msg)
 			for k, v := range ClientPool { //broad casting
 				fmt.Printf("key : %s, value : %v", k, v.UserID)
-				v.Conn.Write(recvBuf)
+				msgWithID := v.UserID + ": " + msg
+				packedData := tools.Pack(msgWithID, 0, 2, 0)
+				v.Conn.Write(packedData)
 			}
 		}
 	}
