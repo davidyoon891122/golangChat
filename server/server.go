@@ -103,15 +103,15 @@ func Handler(conn net.Conn) {
 			fmt.Println(res)
 
 			fmt.Printf("%v : %s", ClientPool[address].UserID, msg)
+			msgWithID := fmt.Sprintf("%v : %s", ClientPool[address].UserID, msg)
 			for k, v := range ClientPool { //broad casting
 				fmt.Printf("key : %s, value : %v", k, v.UserID)
-				msgWithID := v.UserID + ": " + msg
 				packedData := tools.Pack(msgWithID, 0, 2, 0)
 				v.Conn.Write(packedData)
 			}
 		}
 	}
-
+	defer fmt.Printf("client is disconnected : %v\n", ClientPool[address].UserID)
 	defer delete(ClientPool, address)
 }
 

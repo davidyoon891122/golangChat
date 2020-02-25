@@ -15,6 +15,8 @@ var LoginCode map[int]string = map[int]string{
 	02: "Check Your Password",
 }
 
+type Accounts []Login
+
 func InitLogin() *Login {
 	login := &Login{}
 
@@ -43,24 +45,42 @@ func readLogin() {
 }
 
 func runLogin() (bool, int) {
-	tmpInfo := Login{
-		UserID:   "david",
-		Password: "1234",
+	accounts := Accounts{
+		{
+			UserID:   "david",
+			Password: "1234",
+		},
+		{
+			UserID:   "qqpo12",
+			Password: "1234",
+		},
 	}
 
-	if login.UserID == tmpInfo.UserID {
-		if login.Password == tmpInfo.Password {
-			fmt.Println("Login Success!")
-			return true, 00
+	//for loop for checking registed User.
+	fmt.Println(accounts)
+	var res bool
+	var code int
+
+	for _, account := range accounts {
+		if login.UserID == account.UserID {
+			if login.Password == account.Password {
+				fmt.Println("Login Success!")
+				res = true
+				code = 00
+				break
+			} else {
+				fmt.Println("Check your password")
+				res = false
+				code = 02
+				break
+			}
 		} else {
-			fmt.Println("Check your password")
-			return false, 02
+			fmt.Println("Check your ID")
+			res = false
+			code = 01
 		}
-	} else {
-		fmt.Println("Check your ID")
-		return false, 01
 	}
-
+	return res, code
 }
 
 func (l *Login) GetUserID() string {

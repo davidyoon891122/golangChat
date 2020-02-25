@@ -49,8 +49,7 @@ func main() {
 
 	go RecvFunc(conn)
 	for {
-
-		fmt.Printf("client : ")
+		fmt.Printf("client : \n")
 		in := bufio.NewReader(os.Stdin)
 		data, err := in.ReadString('\n')
 		data = strings.TrimRight(data, "\n")
