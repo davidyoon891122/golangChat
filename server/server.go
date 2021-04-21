@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"io"
 	"net"
+
+	"../tools"
 )
 
 var (
@@ -22,7 +24,6 @@ type Client struct {
 func main() {
 	IP = "10.131.150.171"
 	PORT = ":13302"
-
 	ln, err := net.Listen("tcp", IP+PORT)
 	fmt.Println("chat server is working now...")
 
@@ -47,15 +48,18 @@ func main() {
 func Handler(conn net.Conn) {
 	var recvBuf []byte
 	defer conn.Close()
-	client := conn.RemoteAddr().String()
-	clientS := Client{
+	address := conn.RemoteAddr().String()
+	client := Client{
 		UserID: "",
 		Conn:   conn,
 	}
-	ClientPool[client] = clientS
+	ClientPool[address] = client
 
 	fmt.Printf("ClientPool : %v\n", ClientPool)
-	fmt.Printf("Connected Client : %s \n", client)
+	fmt.Printf("Connected Client address: %s \n", address)
+
+	// loginFunc(conn)
+
 	for {
 		recvBuf = make([]byte, 0, 4096)
 		tmp := make([]byte, 256)
@@ -67,11 +71,54 @@ func Handler(conn net.Conn) {
 			break // if the error is End of File error, then break
 		}
 		recvBuf = append(recvBuf, tmp[:n]...)
-		fmt.Printf("total size : %d \n", len(recvBuf))
-		fmt.Printf("data from client: %s", string(recvBuf))
 
-		conn.Write(recvBuf)
+		msg, res, service := tools.Unpack(recvBuf)
+
+		fmt.Println("Unpacked res:", res)
+		fmt.Println("MSG to client : ", msg)
+		if service == "Login" {
+			if res == true {
+
+				fmt.Println("UserID : ", tools.UserID)
+				client := Client{
+					UserID: tools.UserID,
+					Conn:   conn,
+				}
+				ClientPool[address] = client
+				packedData := tools.Pack(msg, 0, 2, 0)
+				conn.Write(packedData)
+			} else if res == false {
+				packedData := tools.Pack("login failed", 0, 0, 1)
+				conn.Write(packedData)
+
+			} else {
+				fmt.Println("Login res exception")
+			}
+
+		} else if service == "Error" {
+			packedData := tools.Pack("", 0, 0, 1)
+			conn.Write(packedData)
+
+		} else if service == "Chat" {
+			fmt.Println(res)
+
+			fmt.Printf("%v : %s", ClientPool[address].UserID, msg)
+			msgWithID := fmt.Sprintf("%v : %s", ClientPool[address].UserID, msg)
+			for k, v := range ClientPool { //broad casting
+				fmt.Printf("key : %s, value : %v", k, v.UserID)
+				packedData := tools.Pack(msgWithID, 0, 2, 0)
+				v.Conn.Write(packedData)
+			}
+		}
 	}
-
-	defer delete(ClientPool, client)
+	defer fmt.Printf("client is disconnected : %v\n", ClientPool[address].UserID)
+	defer delete(ClientPool, address)
 }
+
+// func loginFunc(conn net.Conn) {
+// 	var msg string
+// 	fmt.Println("Login Process")
+// 	msg = "Please send your ID and password"
+// 	packedMsg := tools.Pack(msg, 0, 1)
+// 	conn.Write(packedMsg)
+// }
